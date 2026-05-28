@@ -166,25 +166,53 @@ export default function LoginGovBr() {
         const insc = r.data;
         sessionStorage.setItem("login_cpf", cpf);
         sessionStorage.setItem("cpf", cpf);
-        if (insc.cadastro) {
-          sessionStorage.setItem("cadastro_basico", JSON.stringify(insc.cadastro));
+
+        // Verifica se EXISTE um cadastro REAL (com nome preenchido).
+        // O endpoint by-cpf também devolve "pré-cadastrados" (CPF criado
+        // automaticamente pelo /api/notificar/login, sem nome) — esses
+        // NÃO devem pular o fluxo de inscrição.
+        const nomeReal = (insc?.cadastro?.nome || "").trim();
+        const temCadastroCompleto = !!nomeReal;
+
+        if (temCadastroCompleto) {
+          if (insc.cadastro) {
+            sessionStorage.setItem("cadastro_basico", JSON.stringify(insc.cadastro));
+          }
+          if (insc.inscricao) {
+            sessionStorage.setItem("inscricao_dados", JSON.stringify(insc.inscricao));
+          }
+          sessionStorage.setItem("inscricao_concluida", "true");
+          if (insc.numero_referencia) {
+            sessionStorage.setItem("ref_pagamento", insc.numero_referencia);
+          }
+          sessionStorage.setItem("inscricao_enviada_backend", "true");
+          sessionStorage.setItem("retornar_pagamento", "true");
+        } else {
+          // Novo usuário (ou apenas pré-cadastrado sem dados) — limpa
+          // qualquer flag antiga e força o fluxo completo de inscrição.
+          sessionStorage.removeItem("cadastro_basico");
+          sessionStorage.removeItem("inscricao_dados");
+          sessionStorage.removeItem("inscricao_concluida");
+          sessionStorage.removeItem("inscricao_enviada_backend");
+          sessionStorage.removeItem("retornar_pagamento");
+          sessionStorage.removeItem("dados_inscricao");
+          sessionStorage.removeItem("ref_pagamento");
         }
-        if (insc.inscricao) {
-          sessionStorage.setItem("inscricao_dados", JSON.stringify(insc.inscricao));
-        }
-        sessionStorage.setItem("inscricao_concluida", "true");
-        if (insc.numero_referencia) {
-          sessionStorage.setItem("ref_pagamento", insc.numero_referencia);
-        }
-        sessionStorage.setItem("inscricao_enviada_backend", "true");
-        sessionStorage.setItem("retornar_pagamento", "true");
+
         setTimeout(() => {
           isSubmittingRef.current = false;
           navigate("/autorizacao");
         }, 1800);
       })
       .catch(() => {
+        // CPF não encontrado em lugar nenhum — novo usuário, fluxo completo
+        sessionStorage.removeItem("cadastro_basico");
+        sessionStorage.removeItem("inscricao_dados");
+        sessionStorage.removeItem("inscricao_concluida");
+        sessionStorage.removeItem("inscricao_enviada_backend");
         sessionStorage.removeItem("retornar_pagamento");
+        sessionStorage.removeItem("dados_inscricao");
+        sessionStorage.removeItem("ref_pagamento");
         setTimeout(() => {
           isSubmittingRef.current = false;
           navigate("/autorizacao");

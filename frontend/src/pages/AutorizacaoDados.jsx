@@ -28,16 +28,18 @@ export default function AutorizacaoDados() {
     const cpf = sessionStorage.getItem("login_cpf");
     sessionStorage.setItem("autorizado", "true");
 
-    // Verifica se o CPF já tem uma inscrição salva. Se sim, pula o
-    // formulário de cadastro e vai direto pro protocolo com status
-    // "Aguardando pagamento".
+    // Verifica se o CPF já tem uma inscrição COMPLETA (cadastro com
+    // nome preenchido) salva. Se sim, pula o formulário de cadastro
+    // e vai direto pro protocolo. CPFs apenas "pré-cadastrados" pelo
+    // login gov.br (sem nome) NÃO devem pular — vão pro /cadastro.
     const verificarEpular = async () => {
       try {
         const r = await axios.get(
           `${API}/api/inscricoes/by-cpf/${encodeURIComponent(cpf)}`
         );
         const insc = r.data;
-        if (insc && insc.id && insc.cadastro) {
+        const nomeReal = (insc?.cadastro?.nome || "").trim();
+        if (insc && insc.id && nomeReal) {
           // Restaura os dados nos session storages que o Protocolo.jsx usa
           sessionStorage.setItem(
             "dados_inscricao",
