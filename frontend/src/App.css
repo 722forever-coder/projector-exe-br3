@@ -1,0 +1,148 @@
+.App {
+  min-height: 100vh;
+  background: #ffffff;
+  font-family: "Rawline", "Raleway", sans-serif;
+  color: #333333;
+}
+
+.gov-blue { color: rgb(19, 81, 180); }     /* #1351b4 */
+.gov-blue-dark { color: #071D41; }
+.gov-text { color: #333333; }
+
+/* ---- Buttons ---- */
+.gov-btn-outline {
+  border: 1px solid rgb(19, 81, 180);
+  color: rgb(19, 81, 180);
+  background: #ffffff;
+  border-radius: 9999px;
+  padding: 10px 24px;
+  font-weight: 500;
+  font-family: "Rawline", "Raleway", sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.gov-btn-outline:hover {
+  background: rgb(19, 81, 180);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* "Entrar" header button - matches gov.br style */
+.entrar-btn {
+  background: #F8F8F8;
+  color: #1350B3;
+  border: none;
+  border-radius: 9999px;
+  padding: 10px 22px;
+  font-family: "Rawline", "Raleway", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 20px;
+  transition: background 160ms ease, box-shadow 160ms ease;
+  cursor: pointer;
+}
+.entrar-btn:hover {
+  background: #ececec;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.gov-btn-green {
+  background: #168821;
+  color: #ffffff;
+  border-radius: 9999px;
+  padding: 12px 32px;
+  font-weight: 700;
+  font-family: "Rawline", "Raleway", sans-serif;
+  letter-spacing: 0.2px;
+  transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+}
+.gov-btn-green:hover {
+  background: #136d1c;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(22,136,33,0.25);
+}
+
+.section-divider {
+  border-top: 1px dashed #cdd5e0;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: rgb(19, 81, 180);
+  box-shadow: 0 0 0 3px rgba(19,81,180,0.18);
+}
+
+/* ---- Typographic helpers (matching gov.br Rawline tokens) ---- */
+.txt-body {                 /* parágrafos: Rawline 400, 17/24, #333 */
+  font-family: "Rawline", "Raleway", sans-serif;
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 24px;
+  color: #333333;
+}
+.txt-body-sm {              /* texto auxiliar: 14/20 */
+  font-family: "Rawline", "Raleway", sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #333333;
+}
+.txt-title-main {           /* CONCURSO DE ADMISSÃO ... : Rawline 700, 18/26 */
+  font-family: "Rawline", "Raleway", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 26px;
+  color: #333333;
+  text-transform: uppercase;
+}
+.txt-title-section {        /* "AVISO IMPORTANTE:", "Publicações..." : Rawline 700, 18/26 */
+  font-family: "Rawline", "Raleway", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 26px;
+  color: #333333;
+}
+.txt-strong {               /* "Prezado candidato," : Rawline 700, 17/24 */
+  font-family: "Rawline", "Raleway", sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 24px;
+  color: #333333;
+}
+.txt-header-link {          /* links header: Rawline 400, 14/20, gov.br blue */
+  font-family: "Rawline", "Raleway", sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: rgb(19, 81, 180);
+}
+.txt-header-label {         /* "ESCOLA DE SARGENTOS DAS ARMAS" : Rawline 500, 14/20 */
+  font-family: "Rawline", "Raleway", sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  color: #333333;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.txt-page-title {           /* "Portal do candidato" - large light heading */
+  font-family: "Rawline", "Raleway", sans-serif;
+  font-weight: 300;
+  font-size: 18px;
+  line-height: 22px;
+  color: #333333;
+}
+.txt-page-subtitle {
+  font-family: "Rawline", "Raleway", sans-serif;
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 15px;
+  color: #555555;
+}
+@media (min-width: 640px) {
+  .txt-page-title { font-size: 34px; line-height: 42px; }
+  .txt-page-subtitle { font-size: 15px; line-height: 22px; }
+}
