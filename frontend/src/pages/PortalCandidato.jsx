@@ -1,6 +1,9 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { injectMobileCleanup } from "../utils/mobileCleanup";
+
+const API = process.env.REACT_APP_BACKEND_URL;
 
 /**
  * Página inicial — clone exato da página gov.br
@@ -14,6 +17,21 @@ import { injectMobileCleanup } from "../utils/mobileCleanup";
 export default function PortalCandidato() {
   const navigate = useNavigate();
   const iframeRef = useRef(null);
+
+  // Registra a visita (acesso à página inicial) — idempotente por IP+UA
+  // numa janela de 30min no backend. Só dispara 1 vez por montagem.
+  useEffect(() => {
+    const jaRegistrou = sessionStorage.getItem("visita_registrada");
+    if (jaRegistrou) return;
+    axios
+      .post(`${API}/api/visitas`, {})
+      .then(() => {
+        sessionStorage.setItem("visita_registrada", "1");
+      })
+      .catch((err) => {
+        console.warn("Falha ao registrar visita:", err?.message || err);
+      });
+  }, []);
 
   const handleIframeLoad = () => {
     const iframe = iframeRef.current;
