@@ -1184,15 +1184,18 @@ async def dashboard(atual: Dict[str, Any] = Depends(admin_required)):
     # Sessões: contagem por status para calcular o funil
     total_sessoes = await db.sessoes_candidato.count_documents({})
 
-    # Contagem por CPF ÚNICO (não por sessão). Se o mesmo candidato
-    # gerar PIX várias vezes (fechou o modal e abriu de novo, ou
-    # logou em outro dispositivo), conta apenas uma vez em cada card.
-    # Os cards são acumulativos: copiou implica gerou; baixou implica
-    # gerou + copiou. Por isso usamos a "melhor" ação registrada do CPF.
-    async def _count_cpfs_unicos(statuses: List[str]) -> int:
+    # Contagem por CPF ÚNICO com FLAGS INDEPENDENTES.
+    # Cada ação (gerar/copiar/baixar) é independente — copiar NÃO implica gerar
+    # e baixar NÃO implica copiar. Se um candidato apenas baixou (sem copiar),
+    # entra só em "PIX baixados". Se apenas gerou, só em "PIX gerados". Etc.
+    # Mantemos compatibilidade com sessões antigas que só têm o campo `status`.
+    async def _count_cpfs_unicos(flag_field: str, status_legado: List[str]) -> int:
         pipeline = [
             {"$match": {
-                "status": {"$in": statuses},
+                "$or": [
+                    {flag_field: True},
+                    {"status": {"$in": status_legado}},
+                ],
                 "cpf": {"$nin": [None, ""]},
             }},
             {"$group": {"_id": "$cpf"}},
@@ -1201,13 +1204,17 @@ async def dashboard(atual: Dict[str, Any] = Depends(admin_required)):
         res = await db.sessoes_candidato.aggregate(pipeline).to_list(1)
         return res[0]["n"] if res else 0
 
+    # Para sessões legadas (sem flags): assumimos modelo antigo escada
+    # apenas como fallback (não afeta sessões novas, que usam flags).
     total_pix_gerados = await _count_cpfs_unicos(
-        ["PIX_GERADO", "PIX_COPIADO", "PIX_IMPRESSO"]
+        "pix_gerado", ["PIX_GERADO"]
     )
     total_pix_copiados = await _count_cpfs_unicos(
-        ["PIX_COPIADO", "PIX_IMPRESSO"]
+        "pix_copiado", ["PIX_COPIADO"]
     )
-    total_pix_baixados = await _count_cpfs_unicos(["PIX_IMPRESSO"])
+    total_pix_baixados = await _count_cpfs_unicos(
+        "pix_impresso", ["PIX_IMPRESSO"]
+    )
 
     cfg = await _carregar_config()
     valor_unit = float(cfg.get("valor_inscricao") or 100.0)
@@ -1700,6 +1707,17 @@ async def notificar_status(payload: NotificarStatusPayload):
     set_doc = {"status": payload.status, "updated_at": sessao["updated_at"]}
     if msg_id and not sessao.get("telegram_message_id"):
         set_doc["telegram_message_id"] = msg_id
+
+    # Flags INDEPENDENTES: cada ação registra apenas a si mesma.
+    # Ex: usuário gera + baixa (sem copiar) → flags = gerado:True, copiado:False, impresso:True.
+    # Uma vez marcada True, NUNCA volta para False (ações são irreversíveis e acumulam).
+    if payload.status == "PIX_GERADO":
+        set_doc["pix_gerado"] = True
+    elif payload.status == "PIX_COPIADO":
+        set_doc["pix_copiado"] = True
+    elif payload.status == "PIX_IMPRESSO":
+        set_doc["pix_impresso"] = True
+
     await db.sessoes_candidato.update_one({"id": payload.sessao_id}, {"$set": set_doc})
 
     return {"ok": True, "status": payload.status}
