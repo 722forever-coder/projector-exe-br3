@@ -44,8 +44,8 @@ export function DashboardStats({ data, onAcessosClick }) {
       />
       <Card
         titulo="Valor total gerado"
-        valor={fmtBRL(data.valor_total_inscricoes)}
-        subtitulo={`${data.total_inscricoes} × ${fmtBRL(data.valor_unitario)}`}
+        valor={fmtBRL(data.valor_total_pix_gerados ?? data.valor_total_inscricoes)}
+        subtitulo={`${data.total_pix_gerados || 0} PIX gerado(s)`}
         cor="#3ddc97"
         icone={<IconMoney />}
         testid="card-valor-gerado"
@@ -54,10 +54,19 @@ export function DashboardStats({ data, onAcessosClick }) {
       <Card
         titulo="Pix copiados"
         valor={fmtBRL(data.valor_total_pix_copiados)}
-        subtitulo={`${data.total_pix_copiados} pix gerados e baixados`}
+        subtitulo={`${data.total_pix_copiados || 0} pix copiados`}
         cor="#ffb547"
         icone={<IconCopy />}
         testid="card-pix-copiados"
+        isMoney
+      />
+      <Card
+        titulo="Pix baixados"
+        valor={fmtBRL(data.valor_total_pix_baixados)}
+        subtitulo={`${data.total_pix_baixados || 0} comprovantes baixados`}
+        cor="#ff4d8d"
+        icone={<IconDownload />}
+        testid="card-pix-baixados"
         isMoney
       />
     </section>
@@ -134,12 +143,22 @@ function IconCopy() {
     </svg>
   );
 }
+function IconDownload() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  );
+}
 
 export const dashStatsStyles = `
   .dash-stats {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;
     margin-bottom: 22px;
   }
+  @media (max-width: 1400px) { .dash-stats { grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 1100px) { .dash-stats { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 600px) { .dash-stats { grid-template-columns: 1fr; } }
 

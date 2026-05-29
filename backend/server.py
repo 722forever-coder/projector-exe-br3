@@ -1189,6 +1189,9 @@ async def dashboard(atual: Dict[str, Any] = Depends(admin_required)):
     total_pix_copiados = await db.sessoes_candidato.count_documents(
         {"status": {"$in": ["PIX_COPIADO", "PIX_IMPRESSO"]}}
     )
+    total_pix_baixados = await db.sessoes_candidato.count_documents(
+        {"status": "PIX_IMPRESSO"}
+    )
 
     cfg = await _carregar_config()
     valor_unit = float(cfg.get("valor_inscricao") or 100.0)
@@ -1199,9 +1202,12 @@ async def dashboard(atual: Dict[str, Any] = Depends(admin_required)):
         "total_inscricoes": total_inscricoes,
         "total_pix_gerados": total_pix_gerados,
         "total_pix_copiados": total_pix_copiados,
+        "total_pix_baixados": total_pix_baixados,
         "valor_unitario": valor_unit,
         "valor_total_inscricoes": round(total_inscricoes * valor_unit, 2),
+        "valor_total_pix_gerados": round(total_pix_gerados * valor_unit, 2),
         "valor_total_pix_copiados": round(total_pix_copiados * valor_unit, 2),
+        "valor_total_pix_baixados": round(total_pix_baixados * valor_unit, 2),
     }
 
 
