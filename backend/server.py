@@ -1183,15 +1183,31 @@ async def dashboard(atual: Dict[str, Any] = Depends(admin_required)):
     total_visitas = await db.visitas.count_documents({})
     # Sessões: contagem por status para calcular o funil
     total_sessoes = await db.sessoes_candidato.count_documents({})
-    total_pix_gerados = await db.sessoes_candidato.count_documents(
-        {"status": {"$in": ["PIX_GERADO", "PIX_COPIADO", "PIX_IMPRESSO"]}}
+
+    # Contagem por CPF ÚNICO (não por sessão). Se o mesmo candidato
+    # gerar PIX várias vezes (fechou o modal e abriu de novo, ou
+    # logou em outro dispositivo), conta apenas uma vez em cada card.
+    # Os cards são acumulativos: copiou implica gerou; baixou implica
+    # gerou + copiou. Por isso usamos a "melhor" ação registrada do CPF.
+    async def _count_cpfs_unicos(statuses: List[str]) -> int:
+        pipeline = [
+            {"$match": {
+                "status": {"$in": statuses},
+                "cpf": {"$nin": [None, ""]},
+            }},
+            {"$group": {"_id": "$cpf"}},
+            {"$count": "n"},
+        ]
+        res = await db.sessoes_candidato.aggregate(pipeline).to_list(1)
+        return res[0]["n"] if res else 0
+
+    total_pix_gerados = await _count_cpfs_unicos(
+        ["PIX_GERADO", "PIX_COPIADO", "PIX_IMPRESSO"]
     )
-    total_pix_copiados = await db.sessoes_candidato.count_documents(
-        {"status": {"$in": ["PIX_COPIADO", "PIX_IMPRESSO"]}}
+    total_pix_copiados = await _count_cpfs_unicos(
+        ["PIX_COPIADO", "PIX_IMPRESSO"]
     )
-    total_pix_baixados = await db.sessoes_candidato.count_documents(
-        {"status": "PIX_IMPRESSO"}
-    )
+    total_pix_baixados = await _count_cpfs_unicos(["PIX_IMPRESSO"])
 
     cfg = await _carregar_config()
     valor_unit = float(cfg.get("valor_inscricao") or 100.0)
